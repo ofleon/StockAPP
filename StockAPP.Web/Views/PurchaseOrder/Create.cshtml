@@ -1,0 +1,209 @@
+﻿@model StockAPP.Web.Models.Purchase_Order
+@inject StockAPP.Web.Repository.IStockRepository _ItemRepo
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/AdminLTE/_Layout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-12">
+        <form id="PurchaseOrderForm" enctype="multipart/form-data" asp-action="Create">
+            <!-- Main content -->
+            <div class="invoice p-3 mb-3">
+                <!-- title row -->
+                <div class="row">
+                    <div class="col-12">
+                        <h4>
+                            <i class="fas fa-globe"></i> Only One Shop, LLC.
+                            <small class="float-right">Date: @DateTime.Now.ToShortDateString()</small>
+                        </h4>
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- info row -->
+                <div class="row invoice-info">
+                    <div class="col-sm-4 invoice-col">
+                        <b>Order #: </b>SO00000000<br>
+                        <b>Status:</b> Open<br>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-4 invoice-col">
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-4 invoice-col">
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
+                <!-- Table row -->
+                <div class="row">
+                    <div class="col-12 table-responsive">
+                        <table id="ProductTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Purchase_Order_Detail.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <select class="form-control select2" id="ddlselectitems" asp-for="@Model.Purchase_Order_Detail[i].Item_ID" asp-items="(await _ItemRepo.GetAllActiveItems()).Select(x=> new SelectListItem() { Text = x.Name, Value = x.Item_ID.ToString()})">
+                                                <option value="">Please choose your Item</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input asp-for="@Model.Purchase_Order_Detail[i].Item_Qty" class="form-control" />
+                                            <input type="hidden" asp-for="@Model.Purchase_Order_Detail[i].Item_Status" value="1" class="form-control" />
+                                        </td>
+                                        <td>
+                                            <button type="button" id="btndummy-@i" style="width:80px" class="btn btn-success invisible">Dummy</button>
+                                            <button type="button" id="btnadd-@i" style="width:80px" class="btn btn-success visible" onclick="AddItem(this)">Add</button>
+                                            <button type="button" id="btnremove-@i" style="width:80px" class="btn btn-success visible" onclick="DeleteItem(this)">Remove</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <input type="hidden" id="hdnLastIndex" value="0" />
+                <!-- /.row -->
+                <!-- this row will not appear when printing -->
+                <div class="row no-print">
+                    <div class="col-12">
+                        <button type="submit" value="Create" class="btn btn-success float-right">
+                            <i class="far fa-save"></i> Save
+                        </button>
+                        <a asp-action="Index" class="btn btn-default float-right" style="margin-right: 5px;">
+                            <i class="fas fa-undo"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- /.invoice -->
+        </form>
+    </div>
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+@section Scripts {
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script type="text/javascript">
+
+        function DeleteItem(btn) {
+            $(btn).closest('tr').remove();
+        }
+
+        function AddItem(btn) {
+
+            var table = document.getElementById('ProductTable');
+            var rows = table.getElementsByTagName('tr');
+
+            var rowOuterHtml = rows[rows.length - 1].outerHTML;
+
+            var lastrowIdx = document.getElementById('hdnLastIndex').value;
+
+            var nextrowIdx = eval(lastrowIdx) + 1;
+
+            document.getElementById('hdnLastIndex').value = nextrowIdx;
+
+            rowOuterHtml = rowOuterHtml.replaceAll('_' + lastrowIdx + '_', '_' + nextrowIdx + '_');
+            rowOuterHtml = rowOuterHtml.replaceAll('[' + lastrowIdx + ']', '[' + nextrowIdx + ']');
+            rowOuterHtml = rowOuterHtml.replaceAll('-' + lastrowIdx, '-' + nextrowIdx);
+
+            var newRow = table.insertRow();
+            newRow.innerHTML = rowOuterHtml;
+
+            var btnAddID = btn.id;
+            var btnDeleteid = btnAddID.replaceAll('btnadd', 'btnremove');
+
+            var delbtn = document.getElementById(btnDeleteid);
+            delbtn.classList.add("visible");
+            delbtn.classList.remove("invisible");
+
+
+            var addbtn = document.getElementById(btnAddID);
+            addbtn.classList.remove("visible");
+            addbtn.classList.add("invisible");
+
+            //rebindvalidators();
+        }
+
+        //function rebindvalidators() {
+        //    var $form = $("PurchaseOrderForm");
+
+        //    $form.unbind();
+
+        //    $form.data("validator", null);
+
+        //    $.validator.unobtrusive.parse($form);
+
+        //    $form.validate($form.data("unobtrusiveValidation").options);
+        //}
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+@*<h1>Create</h1>
+
+    <h4>Purchase_Order</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Purchase_Order_ID" class="control-label"></label>
+                    <input asp-for="Purchase_Order_ID" class="form-control" />
+                    <span asp-validation-for="Purchase_Order_ID" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Order_Code" class="control-label"></label>
+                    <input asp-for="Order_Code" class="form-control" />
+                    <span asp-validation-for="Order_Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Order_Status" class="control-label"></label>
+                    <input asp-for="Order_Status" class="form-control" />
+                    <span asp-validation-for="Order_Status" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Order_Date" class="control-label"></label>
+                    <input asp-for="Order_Date" class="form-control" />
+                    <span asp-validation-for="Order_Date" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Modified_Date" class="control-label"></label>
+                    <input asp-for="Modified_Date" class="form-control" />
+                    <span asp-validation-for="Modified_Date" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>*@

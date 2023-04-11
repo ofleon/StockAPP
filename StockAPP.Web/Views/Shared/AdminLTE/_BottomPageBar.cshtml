@@ -1,0 +1,48 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model PagerModel
+
+<div class="card-footer clearfix">
+    <ul class="pagination pagination-sm m-0 float-right">
+
+        @if (Model.CurrentPage > 1)
+        {
+            <li class="page-item">
+
+                <a class="page-link" asp-action="@Model.Action" asp-route-pg="1" asp-route-pageSize="@Model.PageSize" asp-route-SearchText="@Model.Searchtext">First</a>
+            </li>
+            <li class="page-item">
+
+                <a class="page-link" asp-action="@Model.Action" asp-route-pg="@(Model.CurrentPage-1)" asp-route-pageSize="@Model.PageSize" asp-route-SearchText="@Model.Searchtext">Previous</a>
+            </li>
+        }
+
+        @if (Model.CurrentPage < Model.TotalPages)
+        {
+            <li class="page-item">
+
+                <a class="page-link" asp-action="@Model.Action" asp-route-pg="@(Model.CurrentPage+1)" asp-route-pageSize="@Model.PageSize" asp-route-SearchText="@Model.Searchtext">Next</a>
+            </li>
+            <li class="page-item">
+
+                <a class="page-link" asp-action="@Model.Action" asp-route-pg="@(Model.TotalPages)" asp-route-pageSize="@Model.PageSize" asp-route-SearchText="@Model.Searchtext">Last</a>
+            </li>
+        }
+
+        @for (var pge = Model.StartPage; pge <= Model.EndPage; pge++)
+        {
+            <li class="page-item @(pge==Model.CurrentPage ?"active" : "")">
+                @if (pge != Model.CurrentPage)
+                {
+                    <a class="page-link" asp-action="@Model.Action" asp-route-pg="@pge" asp-route-pageSize="@Model.PageSize" asp-route-SearchText="@Model.Searchtext">@pge</a>
+                }
+                else
+                {
+                    <span class="page-link">@pge</span>
+                }
+            </li>
+        }
+    </ul>
+</div>

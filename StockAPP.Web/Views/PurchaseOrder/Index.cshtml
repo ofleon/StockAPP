@@ -1,0 +1,99 @@
+﻿@model IEnumerable<StockAPP.Web.Models.Purchase_Order>
+@inject StockAPP.Web.Repository.IStockRepository _stockrep
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/AdminLTE/_Layout.cshtml";
+
+    PagerModel pager = ViewBag.Pager;
+}
+
+
+<a asp-action="Create" class="btn btn-app">
+    <i class="fa fa-folder-plus"></i> New Purchase Order
+</a>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Purchase Orders</h3>
+
+                <div class="card-tools">
+                    <form asp-action="Index">
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            <input type="text" value="@ViewBag.SearchText" name="SearchText" class="form-control float-right" placeholder="Search">
+
+                            <div class="input-group-append">
+                                <button type="submit" value="Search" class="btn btn-default">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Order Code</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            int qty = _stockrep.GetBoxQtybySalesOrder(item.Purchase_Order_ID).Result;
+                            string status = "";
+                            switch (item.Order_Status)
+                            {
+                                case 1:
+                                    status = "Open";
+                                    break;
+
+                                case 2:
+                                    status = "Pending";
+                                    break;
+
+                                case 3:
+                                    status = "Closed";
+                                    break;
+                            }
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Purchase_Order_ID)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Order_Code)
+                                </td>
+                                <td>
+                                    @status
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Order_Date)
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-flat" onclick='window.location = "@Url.Action("Details", "PurchaseOrder", new { id = item.Purchase_Order_ID })";'>
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+
+            <partial name="AdminLTE/_BottomPageBar" model="@pager" />
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+<!-- /.row -->
